@@ -1,0 +1,8 @@
+Program do tworzenia folderow do pracy
+1. Bash script
+2. Web development basic 
+3. C++ basic 
+4. Java basic
+5. Custom options
+6. Help
+

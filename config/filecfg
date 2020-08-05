@@ -1,0 +1,6 @@
+file=script.sh
+cssFile=style.css
+jsFile=main.js
+cppFile=main.cpp
+javaFile=Main.java
+javaDir=JavaProject
