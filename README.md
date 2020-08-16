@@ -5,6 +5,7 @@ This repository is made to simplify project creation and to automate boring stuf
 
 Project made with bash 
 
+![Photo](./terminal.png)
 # Download script and start script
 * using curl
 ```
