@@ -4,3 +4,4 @@ jsFile=main.js
 cppFile=main.cpp
 javaFile=Main.java
 javaDir=JavaProject
+DEFAULTPROJECTNAME=default_project_name

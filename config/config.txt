@@ -1,4 +1,5 @@
 Program do tworzenia folderow do pracy
+0. Exit program
 1. Bash script
 2. Web development basic 
 3. C++ basic 
