@@ -5,6 +5,28 @@ This repository is made to simplify project creation and to automate boring stuf
 
 Project made with bash 
 
+# Download script and start script
+* using curl
+```
+curl -O https://raw.githubusercontent.com/Czesiek2000/workspace-creator/master/wkcr.sh
+
+chmod +x wkcr.sh
+```
+
+* using wget
+```
+wget https://raw.githubusercontent.com/Czesiek2000/workspace-creator/master/wkcr.sh
+
+chmod +x wkcr.sh
+```
+* using git - clone repository to your disk
+```
+git clone https://github.com/Czesiek2000/workspace-creator.git foldername
+# If you didn't specify folder name project will clone to your current directory
+
+cd foldername
+```
+
 ## File structure 
 Program generate file structure based on category and add simple starter template to each file 
 
@@ -97,7 +119,13 @@ Program generate file structure based on category and add simple starter templat
 
 Description
 wkcr can be execute with or without arguments example ./wkcr -h
-The following options are available
-* -h or --help help command 
-* -v or --version show script version
-* More option comming
+```
+Options available
+    -h or --help help command 
+    -v or --version show script version
+    -g init with git inside specified folder
+    -z zip file 
+    -Uz unzip file
+    -d docs link
+More option comming
+```
