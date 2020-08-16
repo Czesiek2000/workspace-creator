@@ -1,4 +1,4 @@
-Program do tworzenia folderow do pracy
+Program to create workspace folders
 0. Exit program
 1. Bash script
 2. Web development basic 
