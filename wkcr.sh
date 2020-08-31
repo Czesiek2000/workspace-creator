@@ -21,7 +21,9 @@ underline=`tput smul`
 # Check if log file exists
 if [ -f wkcr.log ]
 then
-	rm wkcr.log
+	# rm wkcr.log
+	# Change removing file with clearing 
+	echo "" > wkcr.log
 fi
 
 # Function to delete existing folder
@@ -452,6 +454,13 @@ then
 		exit 0
 	fi
 
+	if [[ $extension =~ "." ]]
+	then
+		extension=$extension
+	else 
+		extension=".$extension"
+	fi
+
 	echo -n "Give file name or names to create (without extension ex script not script.EXTENSION): "
 	read f
 
@@ -476,20 +485,35 @@ then
 		echo "wkcr: Menu option 5 ruby project downloaded" >> "wkcr.log"
 	fi
 
-
 	for i in $f
 	do
-		#TODO validation preventing to create file with two extensions ex. script.py.py
-		if [ -f "$c/$i.$extension" ]
-		then 
-			echo "$i exists in $c folder "
-			echo "wkcr: Menu option 5 file $i exists in $c" >> "wkcr.log"
-		else
-			touch "$c/$i.$extension"
-			cp "$CFGF/example.$extension" "$c/$i.$extension" 2> /dev/null
-			echo "wkcr: Menu option 5 copied successfully" >> "wkcr.log"
+		if [[ $i =~ "." ]]
+		then
+			if [ -f "$c/$i" ]
+			then
+				echo "File $i already exists in $c folder"
+			else
+				touch "$c/$i"
+			fi
+		else 
+			touch "$c/$i$ext"
+			# echo "#!/bin/bash" >> "$c/$i$ext"
 		fi
 	done
+
+	# for i in $f
+	# do
+	# 	#TODO validation preventing to create file with two extensions ex. script.py.py
+	# 	if [ -f "$c/$i.$extension" ]
+	# 	then 
+	# 		echo "$i exists in $c folder "
+	# 		echo "wkcr: Menu option 5 file $i exists in $c" >> "wkcr.log"
+	# 	else
+	# 		touch "$c/$i.$extension"
+	# 		cp "$CFGF/example.$extension" "$c/$i.$extension" 2> /dev/null
+	# 		echo "wkcr: Menu option 5 copied successfully" >> "wkcr.log"
+	# 	fi
+	# done
 
 	echo -e "\nProject created, \n\n\tcd $c"
 

@@ -21,11 +21,31 @@ case $1  in
     -g)
     echo -n "Give folder name that you want to init git in: "
     read c
-    cd $c
-    # git init
-    echo "Init git in $c "
-    cd ..
-    echo "wkcr/args: Git init successfully in $(pwd)" >> "wkcr.log"
+    if [ -d $c ]
+    then
+        # cd $c
+        echo "$c exists"
+    else
+        mkdir $c
+        echo "wkcr/args: Folder $c created in $(pwd)" >> "wkcr.log"
+        echo "Folder $c created"
+    fi
+    if [ ! -d "$c/.git" ]
+    then
+        cd $c
+        git init
+        echo "Init git in $c "
+        # mkdir "$c/.git"
+        echo "wkcr/args: Git init successfully in $(pwd)" >> "../wkcr.log"
+        # mv "wkcr.log" "../"
+        cd ..
+    else 
+        echo "Git already exists in $c"
+        echo "wkcr/args: Git already exits in folder $c, $(pwd)" >> "wkcr.log"
+        exit 1
+    fi
+    # cd ..
+
     exit 0
     ;;
     
@@ -89,8 +109,27 @@ case $1  in
     exit 0
     ;;
 
+    -R)
+    echo "Create readme"
+    echo -n "Give folder name to create README.md file: "
+    read d
+    if [ -d $d ]
+    then
+        echo "$d exists on disk"
+        echo "wkcr/args: $d exists in $(pwd)" >> "wkcr.log"
+        touch "$d/README.md"
+        echo "# $d" > "README.md"
+        echo "README.md crated in $d"
+        echo "wkcr/args: README file created in $d, $(pwd)" >> "wkcr.log"
+
+    else
+        echo "$d doesn't exists on disk, create empty folder with README.md file"
+    fi
+    exit 0
+    ;;
     *)
     echo "This argument doesn't exists, please check docs or type -h / --help"
     echo "wkcr/args: Case default value" >> "wkcr.log"
+    exit 0
     ;;
 esac

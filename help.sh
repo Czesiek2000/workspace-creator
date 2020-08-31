@@ -107,29 +107,71 @@ then
         fi
     done
 
+    for j in `ls .`
+    do
+        if [ -f $j ]
+        then
+            echo "wkcr/help: $j is file " >> "wkcr.log"
+            if [ "$j" != "wkcr.sh" ] && [ "$j" != "args.sh" ] && [ "$j" != "help.sh" ]
+            then
+                echo "-- $j"
+            fi
+
+        fi
+    done
+
     echo -n "Give folders that you want to delete: "
     read a
     
-    echo -n "Are you sure you want to delete given folders?(y/n): "
-    read b
+    if [ ! -z $a ]
+    then
+        echo -n "Are you sure you want to delete given folders?(y/n): "
+        read b
 
-    if [ $b == "y" ]
-    then 
-        echo "wkcr/help: Help choice 3 choice y" >> "wkcr.log"
-        for i in $a
-        do
-            if [ -f $i ]
-            then 
-                echo "$i is a file"  
-            fi
+        if [ $b == "y" ]
+        then 
+            echo "wkcr/help: Help choice 3 choice y" >> "wkcr.log"
+            for i in $a
+            do
+                if [ -f $i ]
+                then 
+                    echo "$i is a file"  
+                fi
 
-            if [ -d $i ] 
+                if [ -d $i ] 
+                then
+                    rm -r "$i"
+                    echo "$i deleted"
+                fi
+                echo "wkcr/help: Folder $i deleted from $(pwd)" >> "wkcr.log"
+            done
+        fi
+    else
+        echo -n "Give files name to delete: "
+        read files
+
+        if [ -z $files ]
+        then
+            echo -n "Are you sure you want to delete them? (y/n): "
+            read answer
+            
+            if [ "$answer" == "y" ]
             then
-                rm -r "$i"
-                echo "$i deleted"
+                for i in $files
+                do
+                    if [ -f $i ]
+                    then
+                        rm $i
+                        echo "File $i deleted"
+                        echo "wkcr/help: $i deleted from $(pwd)" >> "wkcr.log"
+                    else
+                        echo "$i doesn't exists"
+                    fi
+                done
             fi
-            echo "wkcr/help: Folder $i deleted" >> "wkcr.log"
-        done
+        else 
+            echo "wkcr/help: User enter nothing" >> "wckr.log"
+        fi
     fi
 elif [ $CHOICE -eq 4 ]
 then
