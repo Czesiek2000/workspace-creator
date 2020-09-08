@@ -1,27 +1,40 @@
 #!/bin/bash
-# Starter link to raw files
+: '
+Workspace creator - https://github.com/Czesiek2000/workspace-creator
+Author: Michał Czech, Czesiek2000 https://github.com/Czesiek2000
+Licence MIT
+'
+
+# Start link to raw files
 REPO=https://raw.githubusercontent.com/Czesiek2000/workspace-creator/master/config
 docs=https://github.com/Czesiek2000/workspace-creator
+
+# Script variables
 CFGF=config
 CON=config.txt
 CONFIG="$CFGF/$CON"
 FILECFG=filecfg
+LOG=wkcr.log
+VERSION=1.1
 
 # Colors for terminal output
 red=`tput setaf 1`
 green=`tput setaf 2`
 yellow=`tput setaf 3`
-blue=`tput setaf 4`
+blue=`tput setaf 12`
+dark_blue=`tput setaf 19`
 magenta=`tput setaf 5`
-grey=`tput setaf 8`
+white=`tput setaf 15`
+black=`tput setaf 16`
+grey=`tput setaf 248`
 reset=`tput sgr0`
 bold=`tput bold`
 underline=`tput smul`
 
-# Check if log file exists
-if [ -f wkcr.log ]
+# Check if log file exists, if true clear file content
+if [ -f $LOG ]
 then
-	# rm wkcr.log
+    # rm wkcr.log
 	# Change removing file with clearing 
 	echo "" > wkcr.log
 fi
@@ -36,45 +49,64 @@ function check {
 		if [ $ans == "y" ]
 		then
 			rm -r $1
-			echo "$1 deleted"
+			echo -e "\n$magenta$1 deleted\n"
 		fi
 	fi
-}
-
-# Function to download file 
-function download {
-    echo "$1 doesn't exists downloading it"
-    curl -O "$REPO/$1" 2> /dev/null
-    echo "$1 downloaded successfully"
-    mv "$1" "$CFGF/$1"
-	echo "wkcr: move file $1 to $CFGF successfully" >> "wkcr.log"
-}
-
-# TODO Function to check if user enter good value
-function validate {
-	echo "Validation completed"
 }
 
 # Check user machine
 if [ $(uname) == "Darwin" ]
 then
-	echo "wkcr: Using macos" >> "wkcr.log"
+	echo "wkcr: Using macos" >> $LOG
 	machine="mac"
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]
 then 
-    echo "wkcr: Using linux" >> "wkcr.log"
+    echo "wkcr: Using linux" >> $LOG
     machine="Linux"
 elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]
 then
-    echo "wkcr: Using windows 32 NT" >> "wkcr.log"
+    echo "wkcr: Using windows 32 NT" >> $LOG
     machine="Win32"
 elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW64_NT" ]
 then
-    echo "wkcr: Using windows 64 NT" >> "wkcr.log"
+    echo "wkcr: Using windows 64 NT" >> $LOG
     machine="Win64"
 else
     echo "wkcr: Using undetected machine" >> "wckr.log"
 fi
+
+# Function to download file 
+function download {
+    if [ "$machine" == "mac" ]
+    then
+        echo "$1 doesn't exists downloading it"
+        curl -O "$REPO/$1" 2> /dev/null
+        echo "$1 downloaded successfully"
+        mv "$1" "$CFGF/$1"
+        echo "wkcr: move file $1 to $CFGF successfully" >> $LOG
+    elif [ "$machine" == "Linux" ]
+    then
+        echo "$1 doesn't exists downloading it"
+        wget -i "$REPO/$1" 2> /dev/null
+        echo "$1 downloaded successfully"
+        mv "$1" "$CFGF/$1"
+        echo "wkcr: move file $1 to $CFGF successfully" >> $LOG
+    else
+        echo "Other machine " >> $LOG
+    fi
+}
+
+# Function to check if user enter good value
+function validate {
+	# $1 - regex to check 
+    # $2 - value to check
+    # $3 - read value
+    while [[ ! "$2" =~ "$1" ]]; do
+        echo -n "$red Incrorrect value $white Please enter correct value. If something is wrong please refer to docs here $docs"
+        read $3
+    done
+}
+
 
 # Another script to check arguments
 if [ -f args.sh ]
@@ -82,21 +114,31 @@ then
 	# echo "args.sh File exist"
 	if [ $# -ne 0 ]
 	then
-		echo "wkcr: Give file ./args.sh $1 parameter" >> "wkcr.log"
+		echo "wkcr: Source ./args.sh with $1 argument" >> $LOG
 		source ./args.sh $1
 	fi	
 else 
 	echo "File doesn't exists"
 	curl -O "https://raw.githubusercontent.com/Czesiek2000/workspace-creator/master/args.sh"
-	echo "wkcr: File args.sh downloaded " >> "wkcr.log"
+	echo "wkcr: File args.sh downloaded " >> $LOG
+fi
+
+# Script to handle errors inside main script
+if [ -f help.sh ]
+then
+	echo "wckr: help.sh file exists" >> $LOG
+else 
+	echo "help.sh doesn't exists"
+	curl -O "https://raw.githubusercontent.com/Czesiek2000/workspace-creator/master/help.sh"
+	echo "wkcr: File help.sh downloaded " >> $LOG
 fi
 
 # Check if config folder exists
 if [ -d $CFGF ]
 then
-	echo "wkcr: Directory exists" >> "wkcr.log"
+	echo "wkcr: Directory $CFGF exists " >> $LOG
 else
-	echo "wkcr: Direcotry doesn't exists, $CFGF created" >> "wkcr.log"
+	echo "wkcr: Direcotry doesn't exists, $CFGF created" >> $LOG
 	mkdir "$CFGF"
 fi
 
@@ -107,10 +149,10 @@ then
 	echo "Run script again config files downloaded"
 	exit 0
 else 
-	echo "wkcr: $CONFIG exists " >> "wkcr.log"
+	echo "wkcr: $CONFIG file exists " >> $LOG
 	
 	# Clear terminal window
-	echo "wkcr: Terminal cleared " >> "wkcr.log"
+	echo "wkcr: Terminal cleared " >> $LOG
 	clear
 	
 	# Show some space for better view
@@ -123,13 +165,14 @@ else
 	done
 
 	# User choice 
-	echo -n "Your choice: "
+	echo -n -e "$green?$white Your choice: "
 	read choice
 
 	# Check if user enter right value 
 	while [[ ! $choice =~ ^[0-9]+$ ]] ; do
-		echo -n "Wrong value type once more: "
-		echo "wkcr: Give wrong values of $choice " >> "wkcr.log"
+		echo -e "$red Incorrect value $white.Please enter correct value. Available options 0-6. When problem occures check $docs \n"
+        echo -n "$green?$white Your choice: "
+		echo "wkcr: Give wrong values of $choice " >> $LOG
 		read choice
 	done
 fi
@@ -138,415 +181,112 @@ fi
 if [ ! -f "$CFGF/$FILECFG" ]
 then
 	download $FILECFG
-	echo "wkcr: $FILECFG downloaded" >> "wkcr.log"
-	echo "Run script again config files downloaded"
+	echo "wkcr: $FILECFG downloaded" >> $LOG
+	echo "✔️ Run script again config files downloaded"
 	exit 0
 else
 	# Load script variables
-	echo "wkcr: $CFGF/$FILECFG loaded to script " >> "wkcr.log"
+	echo "wkcr: $CFGF/$FILECFG loaded to script " >> $LOG
 	source "$CFGF/$FILECFG"
 fi
 
-# Menu options
-if [ $choice -eq 0 ] ;
-then
-	echo "Exited program"
-	echo "wkcr: Program exited successfully " >> "wkcr.log"
-	exit 0
+function bash {
+    echo "wkcr: Bash project creating " >> $LOG
+    echo -n "$green?$white Give project folder / directory name: (. or nothing to create in currrent directory): "
+    read dir
 
-elif [ $choice -eq 1 ] ;
-then
-	echo "wkcr: Bash project creating " >> "wkcr.log"
-	echo -n "Give project folder / dir name: "
-	read dir
-	echo -n "Give file name that you want to create: "
-	read file
-	
-	# When user enter script.sh this changes value of $file to be only script.sh not script.sh.sh
-	if [[ $file =~ .sh$ ]] ;
-	then
-		file="$file"
-	else
-		file="$file.sh"
-	fi
+    echo -e "\n$grey If you want to create more than one file please go to help option from this menu and then enter 4 option\n $white"
+    echo -n "$green?$white Give file name that you want to create: "
+    read file
+    
+    while [[ ! $file =~ ^[a-z] ]]
+    do
+        echo -n "Give correct file name you want to create"
+        read file
+    done
 
-	echo "wkcr: Bash file name corrected " >> "wkcr.log"
+    if [[ $file =~ .sh$ ]]
+    then
+        file="$file"
+    else
+        file="$file.sh"
+    fi
 
-	# Use funtion to check if folder exists on disk and ask user to delete it
-	echo "wkcr: check if $dir exists " >> "wkcr.log"
-	check "$dir"
+    echo "wkcr: Bash file name $file corrected " >> $LOG
 
-	# Check if directory exists
-	if [ -z $dir ] ;
-	then
-		echo "wkcr: Empty string to webdev directory: " >> "wkcr.log"
-		if [ -e $file ]
-		then
-			echo "wkcr: File exists " >> "wckr.log"
-			echo "$file File with that name already exists on your disk"
-			exit 0
-		else
-			dir="Folder that you are in"
-			touch $file
-			echo "Created file $file in $dir"
-			echo "wkcr: $file created in $dir " >> "wkcr.log"
-		fi
-	else
-		if [ -d $dir ] ;
-		then
-			echo "$dir Folder with that name already exists on your disk"
-			exit 0
-		else
-			mkdir $dir
-			echo "wkcr: make directory $dir " >> "wkcr.log"
-			touch "$dir/$file"
-			echo "wkcr: create file $file in $dir " >> "wkcr.log"
-			echo -e '#!/bin/bash \n\n#This is example bash program \n\necho "Hello World"' >> "$dir/$file"
-			chmod a+x "$dir/$file"
-			echo "wkcr: Permision a+x add to $file inside $dir " >> "wkcr.log"
-			echo "Add all permissions to $file"
-			echo -e "To execute commands type: \n\tcd $dir\n\t ./$file"
-		fi
-	fi
+    # Check if user enter empty string to prompt
+    # If user enter . or space then give prompt to open file
+    # If user enter folder name, check if exists if true ask to delete else prompt that exists and exit
+    # If user enter directory that not exists, then create it and create file inside it and prompt to cd to folder
+    if [ -z $dir ] || [ "$dir" == "." ]
+    then
+        dir="current directory"
+        if [ -e "$file" ]
+        then
+            echo "wkcr: empty directory, $file exists " >> $LOG
+            echo -e "\n\t$green$file$white exists in $blue$dir\n\n\t$white\bTo open type\n\n\t$green./$file\n"
+            exit 0
 
-elif [ $choice -eq 2 ] ;
-then
-	# Web development variables
-	cssFile=styles.css
-	jsFile=script.js
-	echo "wkcr: enter second menu option: " >> "wckr.log"
-	echo -n "Folder name where you want to project be created: "
-	read webDir
+        else
+            touch $file
+        
+            echo "wkcr: Created file in $dir" >> $LOG
+        
+            chmod a+x $file
+        
+            echo "wkcr: Add a+x permision to script " >> $LOG
 
-	# Check if directory exists
-	if [ -d $webDir ] ;
-	then
-		echo "wkcr: $webDir exists on disk " >> "wkcr.log"
-		echo "$webDir Folder with that name already exists on your disk"
-		exit 0
+            echo -e "\n\tAdd execute permission to file\n"
+            
+            echo -e "\n\t$green$file$white created in folder $blue$dir/ \n\n\t$white\bTo open type\n\n\t$green./$file\n"
+            
+            echo -e '#!/bin/bash \n\n#This is example bash program \n\necho "Hello World"' >> "$file"
+            
+            echo "wkcr: Enter example script to $file " >> $LOG
+        fi
 
-	else 
-		echo -n "Type what file structure you want(0,1,2): "
-		read str
+    else 
+        check "$dir"
+        echo "wkcr: Check if $dir exists" >> $LOG
+        if [ -d $dir ]
+        then
+            echo "wkcr: $dir exists " >> $LOG
+            echo "wkcr: $red Folder with that name already exists on your disk"
+            exit 1
+        else
+            echo "wkcr: $dir doesn't exists" >> $LOG
+            mkdir $dir
+            echo "Directory $dir created" >> $LOG
+            echo "wkcr: Directory $dir created"
 
-		if [ $str -eq 0 ]
-		then
-			# Check if example files exists
-			if [ -f "config/example.css" ] || [ -f "config/example.js" ] ;
-			then
-				mkdir $webDir
-				echo "wkcr: Directory $webDir was created" >> "wkcr.log"
-				touch "$webDir/index.html" "$webDir/$cssFile" "$webDir/$jsFile"
-				echo "wkcr: Create file index.html, $cssFile, $jsFile in $webDir" >> "wkcr.log"
-				# Starters 
-				echo -e '<!DOCTYPE html>\n<html lang="en">\n<head>\n\t<meta charset="UTF-8">\n\t<meta name="viewport" content="width=device-width, initial-scale=1.0">\n\t<title>Example HTML file</title>\n\t<link rel="stylesheet" href='"'$cssFile'"'></head>\n<body>\n\t<h1>Hello world</h1>\n\t<script src='"'$jsFile'"'></script>\n</body>\n</html>' >> "$webDir/index.html"
-				cp "config/example.css" "$webDir/$cssFile"
-				cp "config/example.js" "$webDir/$jsFile"
-				echo "wkcr: Starters copied to project directory " >> "wkcr.log" 
-			fi
-		elif [ $str -eq 1 ]
-		then
-			# Check if example files exists
-			if [ -f "config/example.css" ] && [ -f "config/example.js" ] ;
-			then
-				echo "wkcr: example.css, example.js exists" >> "wkcr.log"
-				mkdir -p $webDir "$webDir/css" "$webDir/js"
-				echo "wkcr: Made directories: $webDir $webDir/css $webDir/js" >> "wkcr.log"
-				touch "$webDir/index.html" "$webDir/css/$cssFile" "$webDir/js/$jsFile"
-				echo "wkcr: Made index.html, $cssFile in $webDir/css, $jsFile in $webDir/js" >> "wkcr.log"
+            touch "$dir/$file"
+            echo -e "\nwkcr:$green$file$white created\n$white"
+            echo "wkcr: Created $file " >> $LOG
 
-				# Starters 
-				echo -e '<!DOCTYPE html>\n<html lang="en">\n<head>\n\t<meta charset="UTF-8">\n\t<meta name="viewport" content="width=device-width, initial-scale=1.0">\n\t<title>Example HTML file</title>\n\t<link rel="stylesheet" href='"'$cssFile'"'></head>\n<body>\n\t<h1>Hello world</h1>\n\t<script src='"'$jsFile'"'></script>\n</body>\n</html>' >> "$webDir/index.html"
-				cp "config/example.css" "$webDir/$cssFile"
-				cp "config/example.js" "$webDir/$jsFile"
-				
-				echo "wkcr: Starters copied to project directory " >> "wkcr.log" 
-			else 
-				echo "wkcr: Missing example files for webdevelopment in option 2 in config folder " >> "wkcr.log"
-				echo "Missing config files add it to current location"
-				#TODO add check if user is using mac/linux/windows
-				open .
-				exit 0
-			fi
-		elif [ $str -eq 2 ]
-		then
-			echo "Structure with sass"
-			# Check if example files exists
-			if [ -f "config/example.css" ] && [ -f "config/example.js" ] && [ -f "config/example.scss" ];
-			then
-				echo "wkcr: example.css, example.js, example.scss exists" >> "wkcr.log"
-				mkdir -p $webDir "$webDir/css" "$webDir/sass" "$webDir/js" "$webDir/sass"
-				echo "wkcr: make $webDir $webDir/css $webDir/sass/ $webDir/js/ directories successfully" >> "wkcr.log"
-				touch "$webDir/index.html" "$webDir/css/$cssFile" "$webDir/js/$jsFile" "$webDir/sass/variables.scss" "$webDir/sass/styles.scss"
-				echo "wkcr: make index.html in root $webDir $cssFile file in $webDir/js/$jsFile $webDir/sass/variables.scss $webDir/sass/styles.scss successfully" >> "wkcr.log"
-
-				# Starters 
-				echo -e '<!DOCTYPE html>\n<html lang="en">\n<head>\n\t<meta charset="UTF-8">\n\t<meta name="viewport" content="width=device-width, initial-scale=1.0">\n\t<title>Example HTML file</title>\n\t<link rel="stylesheet" href='"'$cssFile'"'></head>\n<body>\n\t<h1>Hello world</h1>\n\t<script src='"'$jsFile'"'></script>\n</body>\n</html>' >> "$webDir/index.html"
-				cp "config/example.css" "$webDir/$cssFile"
-				cp "config/example.js" "$webDir/$jsFile"
-				cp "config/sass/styles.scss" "$webDir/sass/styles.scss"
-				cp "config/example.scss" "$webDir/sass/variables.scss"
-				echo "Sass project created"
-				echo "wkcr: copied starters from sass option in webdevelopment successfuly to $webDir " >> "wkcr.log"
-			else 
-				echo "wkcr: Missing example files for webdevelopment in option 3 in config folder " >> "wkcr.log"
-				echo "Missing config files add it to current location"
-				#TODO add check if user is using mac/linux/windows
-				open .
-				exit 0
-			fi
-		else
-	
-	echo "wkcr: Webdevelopment else option from folder structure if" >> "wkcr.log"
-	echo "You typed wrong project structure, only available options 0,1,2 check docs $docs from more info"
-	echo -n "Redirect to link (y/n): "
-	read link
-
-	if [ $link == "y" ];
-	then
-		#TODO add check if user is using mac/linux/windows
-		open $docs
-	fi
-
-	fi
-	
-	fi
-	
-	# Tell user commands to type and open Finder / Explorator
-	echo -e "\nProject created, to start development type: \n\n\t cd $webDir"
-	open $webDir
-
-elif [ $choice -eq 3 ] ;
-then 
-	echo "wkcr: Menu option 3 cpp folder creating" >> "wkcr.log"
-	cppFile="main.cpp"
-	echo -n "Give project folder name that you want to be created: "
-	read cppDir
-	if [ -d $cppDir ] ;
-	then
-		echo "wkcr: Folder $cppDir exists, from menu option 3" >> "wkcr.log"
-		echo "$cppDir Folder with that name already exists on your disk"
-		exit 0
-	else
-		mkdir $cppDir
-		echo "wkcr: Menu option 3 $cppDir" >> "wkcr.log"
-		touch "$cppDir/$cppFile"
-		echo "wkcr: Menu option 3 $cppFile created in $cppDir" >> "wkcr.log"
-		# Give starter point to file
-		echo -e '#include <iostream>\n\n# example cpp code \n\nint main() {\n\n\tcout << "Hello World" << endl\n\n# your code here\n\n}' > "$cppDir/$cppFile"
-		echo "wkcr: Menu option 3 include in $cppFile starter template" >> "wkcr.log"
-	fi
-	
-	echo -n "Create class file (y/n): "
-	read a
-
-	if [[ "$a" == "y" ]] ;
-	then
-			echo -n "Give class name: "
-			read b
-
-			touch "$cppDir/$b.cpp" "$cppDir/$b.h"
-			echo "wkcr: Menu option 3 create class files in $cppDir" >> "wkcr.log"
-			# Starer point for class .cpp file
-			echo -e '#include ''"'$b.h'"'' \n# your code here' > "$cppDir/$b.cpp"
-			echo "wkcr: Menu option 3 add template to cpp classes" >> "wkcr.log"
-			
-			# Create uppercase guard to class header file
-			echo $b | tr a-z A-Z > tmp
-			echo "wkcr: Menu option 3 tmp created" >> "wkcr.log"
-			for i in `cat tmp`
-			do
-				echo -e "#ifndef ${i}_H #include guard \n#define ${i}_H\n\n# your code here\n\n#endif /* ${i}_H */" > "$cppDir/$b.h"
-			done
-			
-			# Remove tmp file 
-			rm tmp
-			echo "wkcr: Menu option 3 remove tmp file" >> "wkcr.log"
-
-			echo -e "Project created \n\n\tcd $cppDir"
-			#cd $cppDir
-			#TODO add check if user is using mac/linux/windows
-			open $cppDir
-	elif [ "$a" == "n" ]
-	then
-			echo -e "Project created, cd $cppDir"
-			# cd $cppDir 
-			#TODO add check if user is using mac/linux/windows
-			open $cppDir
-			exit 0
-	else 
-		echo "wkcr: Menu option 3 creating classes error give something else than y/n" >> "wkcr.log"
-		echo "Something wrong only avaiable options are y/n"
-		exit 0
-	fi
+            chmod a+x "$dir/$file"
+            
+            echo -e "\nAdd execute permission to $green$file"
+            echo "wkcr: Add a+x permision to script " >> $LOG
+            
+            echo -e '#!/bin/bash \n\n#This is example bash program \n\necho "Hello World"' >> "$dir/$file"
+            echo "wkcr: Add example script to $file" >> $LOG
+            echo -e "\n\t$green$file$white created in folder $blue$dir$white/\n\n\tTo run type\n\n\t$green cd $dir\n\n\t./$file\n"
+        fi
+    fi
 
 
-	
-elif [ $choice -eq 4 ] ;
-then 
-	echo "wkcr: Menu option 4 entered" >> "wkcr.log"
-	echo -n "Give project folder name: "
-	read javaD
-
-	# Use default value when user enter nothing
-	if [ -z $javaD ] ;
-	then
-		javaD=$javaDir
-	else
-		javaD=$javaD
-	fi
-
-	echo "wkcr: Menu option 4 correct java file name" >> "wkcr.log"
-
-	# Check if that directory exists
-	if [ -d $javaD ]
-	then
-		echo "wkcr: Menu option 4 $javaD exists" >> "wkcr.log"
-		echo "$javaD Folder with that name already exists"
-		exit 0
-	else
-		mkdir $javaD
-		echo "wkcr: Menu option 4 folder $javaD made" >> "wkcr.log"
-		echo -n "Give file or files names to create: "
-		read files
-		for i in $files
-		do
-			touch "$javaD/$i.java"
-			echo -e 'public class' $i ' {\n\tpublic static void main(String args[]) {\n\t\t// Example code\n\t\tSystem.out.println("Hello world");\n\n\t\t// Your code here\n\t}\n}' > "$javaD/$i.java"
-			echo "wkcr: Menu option 4 $javaD/$i created and add template to file" >> "wkcr.log"
-		done
-	fi
-
-	#TODO Add instruction to run java files
-	echo -e "Project created \n\n\t cd $javaD"
-
-elif [ $choice -eq 5 ] ;
-then
-	echo "wkcr: Menu option 5 entered" >> "wkcr.log"
-	echo -n "Give project folder name that you want to be created "
-	read c
-
-	if [ -z $c ]
-	then
-		echo "wkcr: Menu option 5 c is empty set value of c to $DEFAULTPROJECTNAME" >> "wkcr.log"
-		c=$DEFAULTPROJECTNAME
-	fi
-
-	# Check if folder exists
-	if [ -d $c ] 
-	then
-		echo "$c Folder with that name already exists"
-		echo "wkcr: Menu option 5 folder exists" >> "wkcr.log"
-		exit 0
-	else
-		mkdir $c 
-		echo "wkcr: Menu option 5 folder $c created" >> "wkcr.log"
-		echo "Folder $c was created"
-	fi
-
-	echo -n "Give project extension (without .): "
-	read extension
-	
-	if [ -z $extension ]
-	then
-		echo "wkcr: Menu option 5 empty extension" >> "wkcr.log"
-		echo "Sorry, extension is required: "
-		exit 0
-	fi
-
-	if [[ $extension =~ "." ]]
-	then
-		extension=$extension
-	else 
-		extension=".$extension"
-	fi
-
-	echo -n "Give file name or names to create (without extension ex script not script.EXTENSION): "
-	read f
-
-	if [ $extension == "py" ] ;
-	then
-		echo "Downloading python project"
-		download example.py
-		echo "wkcr: Menu option 5 python project downloaded" >> "wkcr.log"
-	fi
-
-	if [ $extension == "go" ] ;
-	then
-		echo "Downloading go project"
-		download example.go
-		echo "wkcr: Menu option 5 go project downloaded" >> "wkcr.log"
-	fi
-
-	if [ $extension == "ru" ] ;
-	then
-		echo "Downloading ru project"
-		download example.ru
-		echo "wkcr: Menu option 5 ruby project downloaded" >> "wkcr.log"
-	fi
-
-	for i in $f
-	do
-		if [[ $i =~ "." ]]
-		then
-			if [ -f "$c/$i" ]
-			then
-				echo "File $i already exists in $c folder"
-			else
-				touch "$c/$i"
-			fi
-		else 
-			touch "$c/$i$ext"
-			# echo "#!/bin/bash" >> "$c/$i$ext"
-		fi
-	done
-
-	# for i in $f
-	# do
-	# 	#TODO validation preventing to create file with two extensions ex. script.py.py
-	# 	if [ -f "$c/$i.$extension" ]
-	# 	then 
-	# 		echo "$i exists in $c folder "
-	# 		echo "wkcr: Menu option 5 file $i exists in $c" >> "wkcr.log"
-	# 	else
-	# 		touch "$c/$i.$extension"
-	# 		cp "$CFGF/example.$extension" "$c/$i.$extension" 2> /dev/null
-	# 		echo "wkcr: Menu option 5 copied successfully" >> "wkcr.log"
-	# 	fi
-	# done
-
-	echo -e "\nProject created, \n\n\tcd $c"
-
-elif [ $choice -eq 6 ]
-then
-	echo "wkcr: Menu option 6 help option" >> "wkcr.log"
-	echo "Missing some files I will try to help you"
-	if [ -f help.sh ] ;
-	then
-		echo "wkcr: Menu option 5 execute help.sh file" >> "wkcr.log"
-		exec ./help.sh
-	else 
-		# Download help.sh file
-		echo "Downloading file "
-		download "$REPO/help.sh"
-		echo "wkcr: Menu option 6 downloaded help.sh file" >> "wkcr.log"
-	fi
+}
 
 
-else 
-	#TODO Add color here
-	echo "This value doesn't appear in menu, check and try again"
-	echo "wkcr: Menu option else menu option" >> "wkcr.log"
-	echo "You typed wrong project structure, only available options 0,1,2,3,4,5,6 check docs $docs from more info"
-	
-	echo -n "Redirect to link (y/n): "
-	read link
+case $choice in 
+    0)
+    echo "Exit program"
+    echo "wkcr: Program existed succesfully " >> $LOG
+    exit 0
+    ;;
 
-	if [ $link == "y" ];
-	then
-		#TODO add check if user is using mac/linux/windows
-		open $docs
-	fi
+    1)
+    bash
+    ;;
 
-	exit 0
-fi
+esac
