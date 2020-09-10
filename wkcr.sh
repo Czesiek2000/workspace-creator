@@ -175,6 +175,9 @@ else
 		echo "wkcr: Give wrong values of $choice " >> $LOG
 		read choice
 	done
+
+    # Store value user enter
+    echo "wkcr: User choice $choice " >> $LOG    
 fi
 
 # Check if config.txt exists
@@ -211,6 +214,11 @@ function bash {
     else
         file="$file.sh"
     fi
+
+
+    # Store value user enter
+    echo "wkcr: Folder name $dir " >> $LOG    
+    echo "wkcr: File name $file " >> $LOG    
 
     echo "wkcr: Bash file name $file corrected " >> $LOG
 
@@ -277,6 +285,214 @@ function bash {
 
 }
 
+function web {
+    cssFile=styles.css
+    jsFile=script.js
+    defaultWebDir=WebProject
+    echo -n "$green?$white Give folder name where you want your project to be created: "
+	read webDir
+
+    if [ -z $webDir ]
+    then
+        webDir=$defaultWebDir
+    fi
+
+    if [ -d $webDir ]
+    then
+        echo "wkcr: $webDir exists on disk " >> $LOG
+		echo "wkcr: $webDir Folder with that name already exists on your disk"
+		check "$webDir"
+        echo "wkcr: Check function on $webDir" >> $LOG
+        exit 0
+    else
+        echo -n -e "$green?$white Select project structure (0,1,2): "
+        read str
+        while [[ ! $str =~ ^[0-2] ]]
+        do
+            echo -e "\n$red\bIncorrect value.$white\nPlease enter correct value. More info inside docs $docs or enter help option in this menu\n"
+            echo -n "$green?$white\bYour choice: "
+            read str
+        done
+
+        # Store value user enter
+        echo "wkcr: Value of directory $webDir " >> $LOG
+        
+        echo "wkcr: Value of option $str " >> $LOG
+        
+        # Check what editor user has on computer
+        function editor {
+            EDITOR=""                
+                if ! command -v code &>>$LOG
+                then
+                    echo "wkcr: VSCode not found on computer" >> $LOG
+                    
+                    if ! command -v subl &>>$LOG 
+                    then
+                        echo "wkcr: sublime not found on computer" >> $LOG
+                    else
+                        EDITOR="subl"
+                        echo "wkcr: Open $webDir in Sublime text " >> $LOG
+                    fi
+                                        
+                else 
+                    EDITOR="code"
+                    echo "wkcr: Open $webDir in Visual Studio Code" >> $LOG
+                fi
+                if [ -z $EDITOR ]
+                then
+                    echo -e "\nTo start working:\n\n\t$blue cd $webDir \n\n\t$white Open your favourite editor and start working\n"
+                else 
+                    echo -e "\nTo start working:\n\n\t$blue cd $webDir\n\t$green$EDITOR $webDir$white\n"
+                fi 
+                echo "wkcr: VSCode and Sublime Text 3 doesn't installed on computer show default message" >> $LOG
+        }
+
+        if [ ! -f config/example.css ]
+        then
+            echo "wkcr:$red example.css not exists$white" >> $LOG
+        fi
+
+        if [ ! -f config/example.js ]
+        then
+            echo "wkcr:$red example.js not exists$white" >> $LOG
+        fi
+
+        if [ ! -f config/example.scss ]
+        then
+            echo "wkcr:$red example.scss not exists$white" >> $LOG
+        fi
+
+        if [ ! -f config/example_variables.scss ]
+        then
+            echo "wkcr:$red example_variables.scss not exists$white" >> $LOG
+        fi
+
+        # Diffrent project structures
+        if [ $str -eq 0 ]
+        then
+            echo "wkcr: Enter first option in second menu" >> $LOG
+            
+            # Check if example files exists
+			if [ -f "config/example.css" ] && [ -f "config/example.js" ] ;
+			then
+				echo "wkcr: example.css, example.js exists" >> $LOG
+				mkdir -p $webDir "$webDir" "$webDir"
+				echo "wkcr: Made directories: $webDir" >> $LOG
+				touch "$webDir/index.html" "$webDir/$cssFile" "$webDir/$jsFile"
+				echo "wkcr: Made index.html, $cssFile in $webDir, $jsFile in $webDir" >> $LOG
+
+				# Starters 
+				echo -e '<!DOCTYPE html>\n<html lang="en">\n<head>\n\t<meta charset="UTF-8">\n\t<meta name="viewport" content="width=device-width, initial-scale=1.0">\n\t<title>Example HTML file</title>\n\t<link rel="stylesheet" href='"'$cssFile'"'></head>\n<body>\n\t<h1>Hello world</h1>\n\t<script src='"'$jsFile'"'></script>\n</body>\n</html>' >> "$webDir/index.html"
+				cp "config/example.css" "$webDir/$cssFile"
+				cp "config/example.js" "$webDir/$jsFile"
+				
+				echo "wkcr: Starters copied to project directory " >> $LOG
+                
+                editor
+            
+            else
+                echo "wkcr: Missing example files for webdevelopment in option 2 in config folder " >> $LOG
+				echo -e "$red\bMissing config files $white add it to current location or use help option from this menu (6)"
+				
+                if [ "$machine" == "mac" ]
+                then
+                    open .
+                elif [ "$machine" == "Linux" ]
+                then
+                    xdg-open .
+                    echo "wkcr: Open current location in explorator" >> $LOG
+                else 
+                    echo "wkcr:$red Unknow machine"
+                    echo "wkcr: else in 0 option in 2 menu option, machine windows or other linux distibution not supported yet" >> $LOG
+                fi
+				exit 0
+            fi
+        
+        elif [ $str -eq 1 ]
+        then
+            # Check if example files exists
+			if [ -f "config/example.css" ] && [ -f "config/example.js" ] ;
+			then
+				echo "wkcr: example.css, example.js exists" >> $LOG
+				mkdir -p $webDir "$webDir/css" "$webDir/js"
+				echo "wkcr: Made directories: $webDir $webDir/css $webDir/js" >> $LOG
+				touch "$webDir/index.html" "$webDir/css/$cssFile" "$webDir/js/$jsFile"
+				echo "wkcr: Made index.html, $cssFile in $webDir/css, $jsFile in $webDir/js" >> $LOG
+
+				# Starters 
+				echo -e '<!DOCTYPE html>\n<html lang="en">\n<head>\n\t<meta charset="UTF-8">\n\t<meta name="viewport" content="width=device-width, initial-scale=1.0">\n\t<title>Example HTML file</title>\n\t<link rel="stylesheet" href='"'css/$cssFile'"'></head>\n<body>\n\t<h1>Hello world</h1>\n\t<script src='"'js/$jsFile'"'></script>\n</body>\n</html>' >> "$webDir/index.html"
+				cp "config/example.css" "$webDir/css/$cssFile"
+				cp "config/example.js" "$webDir/js/$jsFile"
+				
+				echo "wkcr: Starters copied to project directory " >> $LOG 
+                
+                editor
+
+			else 
+				echo "wkcr: Missing example files for webdevelopment in option 2 in config folder " >> $LOG
+				echo -e "$red\bMissing config files $white add it to current location or use help option from this menu (6)"
+
+				if [ "$machine" == "mac" ]
+                then
+                    open .
+                elif [ "$machine" == "Linux" ]
+                then
+                    xdg-open .
+                    echo "wkcr: Open current location in explorator" >> $LOG
+                else 
+                    echo "wkcr:$red Unknow machine"
+                    echo "wkcr: else in 0 option in 2 menu option, machine windows or other linux distibution not supported yet" >> $LOG
+                fi
+				exit 0
+			fi
+
+        
+        else 
+            echo "wkcr: Structure with sass" >> $LOG
+			# Check if example files exists
+			if [ -f "config/example.css" ] && [ -f "config/example.js" ] && [ -f "config/example.scss" ];
+			then
+				echo "wkcr: example.css, example.js, example.scss exists" >> $LOG
+				mkdir -p $webDir "$webDir/css" "$webDir/scss" "$webDir/js"
+				echo "wkcr: make $webDir $webDir/css $webDir/scss/ $webDir/js/ directories successfully" >> $LOG
+				touch "$webDir/index.html" "$webDir/css/$cssFile" "$webDir/js/$jsFile" "$webDir/scss/variables.scss" "$webDir/scss/styles.scss"
+				echo "wkcr: make index.html in root $webDir $cssFile file in $webDir/js/$jsFile $webDir/scss/variables.scss $webDir/scss/styles.scss successfully" >> $LOG
+
+				# Starters 
+				echo -e '<!DOCTYPE html>\n<html lang="en">\n<head>\n\t<meta charset="UTF-8">\n\t<meta name="viewport" content="width=device-width, initial-scale=1.0">\n\t<title>Example HTML file</title>\n\t<link rel="stylesheet" href='"'css/$cssFile'"'></head>\n<body>\n\t<h1>Hello world</h1>\n\t<script src='"'js/$jsFile'"'></script>\n</body>\n</html>' >> "$webDir/index.html"
+				cp "config/example.css" "$webDir/css/$cssFile"
+				cp "config/example.js" "$webDir/js/$jsFile"
+				cp "config/example.scss" "$webDir/scss/styles.scss"
+				cp "config/example_variables.scss" "$webDir/scss/variables.scss"
+				echo "wkcr: Sass project created " >> $LOG
+				echo "wkcr: copied starters from config to files specified in option 2 in webdevelopment menu option successfuly to $webDir " >> $LOG
+                
+                editor
+
+			else 
+			    echo "wkcr: Missing example files for webdevelopment in option 2 in config folder " >> $LOG
+				echo -e "$red\bMissing config files $white add it to current location or use help option from this menu (6)"
+
+				if [ "$machine" == "mac" ]
+                then
+                    open .
+                elif [ "$machine" == "Linux" ]
+                then
+                    xdg-open .
+                    echo "wkcr: Open current location in explorator" >> $LOG
+                else 
+                    echo "wkcr:$red Unknow machine"
+                    echo "wkcr: else in 0 option in 2 menu option, machine windows or other linux distibution not supported yet" >> $LOG
+                fi
+
+				exit 0
+			fi
+
+        fi
+    fi
+}
+
+
 
 case $choice in 
     0)
@@ -286,7 +502,30 @@ case $choice in
     ;;
 
     1)
+    echo "wkcr: Option 1 from main menu" >> $LOG
     bash
+    ;;
+
+
+    2)
+    echo "wkcr: Option 2 from main menu" >> $LOG
+    web
+    ;;
+
+    3)
+    echo "Option 3"
+    ;;
+
+    4)
+    echo "Option 4"
+    ;;
+
+    5)
+    echo "Option 5"
+    ;;
+
+    6)
+    echo "Option 6"
     ;;
 
 esac
