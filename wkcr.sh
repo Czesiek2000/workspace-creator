@@ -607,6 +607,56 @@ function cpp {
 
 }
 
+function java {
+    echo "JAVA OPTION" >> $LOG
+	echo "wkcr: Enter menu option 4" >> $LOG
+	echo -n "$green?$white Give project folder name that you want to create: "
+	read javaD
+
+    # Use default value when user enter nothing
+	if [ -z $javaD ] ;
+	then
+		javaD=$javaDir
+	else
+		javaD=$javaD
+	fi
+
+    echo "wkcr: Correct java folder name if nothing passed" >> $LOG
+
+    # Check if passed directory exists
+    if [ -d $javaD ]
+    then
+        check "$javaD"
+        echo "wkcr: Java option, folder $javaD exists" >> $LOG
+		echo "wkcr: $red$javaD Folder with that name already exists $white \n"
+		exit 0
+
+    else 
+        mkdir $javaD
+        echo "wkcr: Java menu option $javaD folder created " >> $LOG
+        echo -n "$green?$white Give file or files names to create (only filenames): "
+        read files
+
+
+        for i in $files
+        do
+            touch "$javaD/$i.java"
+            echo -e 'public class' $i ' {\n\tpublic static void main(String args[]) {\n\t\t// Example code\n\t\tSystem.out.println("Hello world");\n\n\t\t// Your code here\n\t}\n}' > "$javaD/$i.java"
+			echo "wkcr: Java option $javaD/$i created and add template to file" >> $LOG
+        done
+
+        echo "wkcr: OUTPUT FILES" >> $LOG
+        for i in $files
+        do
+            jfile+="$i.java "
+            echo "wkcr: $jfile" >> $LOG
+        done
+
+    fi
+
+    # echo -e "\n New project created in javaD \n\n Execute commands to start project \n\n\t$blue cd javaD $white\n\t > $green javac Test.java $white\n\t > $green java Test.java\n"
+    echo -e "\n New project created in $javaD \n\n Execute commands to start project \n\n\t$blue cd $javaD\n\t$green javac $jfile\n\t$green java $jfile\n"
+}
 
 
 case $choice in 
@@ -633,7 +683,8 @@ case $choice in
     ;;
 
     4)
-    echo "Option 4"
+    echo "wkcr: Option 2 from main menu" >> $LOG
+    java
     ;;
 
     5)
