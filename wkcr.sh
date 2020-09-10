@@ -492,6 +492,121 @@ function web {
     fi
 }
 
+function cpp {
+    echo "MENU OPTION 3 CPP " >> $LOG
+    echo "wkcr: Menu option 3 cpp folder creating" >> $LOG
+    echo -n "$green?$white Give project folder name that you want to be created: "
+    read cppDir
+    echo "wkcr: Cpp dir $cppDir " >> $LOG
+    echo -n "$green?$white Give name of main cpp file (empty to be main.cpp): "
+    read cppFile
+
+    if [ -z $cppFile ]
+    then
+        cppFile="main.cpp"
+        echo "wkcr: Empty cppFile variable assign main.cpp as main file" >> $LOG
+    else
+        cppFile=$cppFile
+    fi
+        echo "wkcr: Cpp file $cppFile " >> $LOG
+
+    if [ -d $cppDir ]
+    then
+        echo "wkcr: Folder $cppDir exists, from menu option 3" >> $LOG
+		echo "wkcr: $red$cppDir Folder with that name already exists on your disk"
+		exit 0
+
+    else 
+        mkdir $cppDir
+        touch "$cppDir/$cppFile"
+        echo "wkcr: Value of directory $cppDir" >> $LOG
+        echo "wkcr: Value of file $cppFile" >> $LOG
+        echo "wkcr: Created $cppFile file in $cppDir" >> $LOG
+        echo "wkcr: Created $cppFile inside $cppDir " >> $LOG
+
+        # Give starter point to file
+		echo -e '#include <iostream>\n\n# example cpp code \n\nint main() {\n\n\tcout << "Hello World" << endl\n\n# your code here\n\n}' > "$cppDir/$cppFile"
+		echo "wkcr: Menu option 3 include in $cppFile starter template" >> $LOG
+    fi
+
+
+    echo -n "$green?$white Want to create class file (y/n): "
+    read a
+
+    if [[ "$a" == "y" ]]
+    then
+        echo "wkcr: Create class option" >> $LOG
+        
+        # TODO: Delete message if multiple class support
+        echo -e "\n$grey In current version of workspace-creator you can create only one class file\n $white"
+        
+        echo "wkcr: Show user notification about class file" >> $LOG
+
+        echo -n "$green?$white Give class name "
+        read class
+
+        # TODO: Add support more than one class 
+        touch "$cppDir/$class.cpp" "$cppDir/$class.h"
+        echo "wkcr: Create class files: $class.cpp and $class.h inside $cppDir" >> $LOG
+
+        # Starter for cpp class file
+        echo -e '#include ''"'$class.h'"'' \n# your code here' > "$cppDir/$class.cpp"
+		echo "wkcr: Add template to cpp classes" >> $LOG
+
+        # Create uppercase guard to class header file
+        echo $class | tr a-z A-Z > tmp
+        echo "wkcr: Tmp file created" >> $LOG
+        for i in `cat tmp`
+        do
+            echo -e "#ifndef ${i}_H #include guard \n#define ${i}_H\n\n# your code here\n\n#endif /* ${i}_H */" > "$cppDir/$class.h"
+        done
+        
+        # Remove tmp file 
+        rm tmp
+        echo "wkcr: Tmp file removed" >> $LOG
+
+        echo -e "Project created \n\n\t$blue cd $cppDir\n\t$green gcc main.cpp -o main $white\n"
+
+        # Check if user is using mac/linux/windows
+        if [ "$machine" == "mac" ]
+        then
+            open .
+            echo "wkcr: Open current location in explorator on mac"
+        elif [ "$machine" == "Linux" ]
+        then
+            xdg-open .
+            echo "wkcr: Open current location in explorator on linux" >> $LOG
+        else 
+            echo "wkcr:$red Unknow machine"
+            echo "wkcr: else in 0 option in 2 menu option, machine windows or other linux distibution not supported yet" >> $LOG
+        fi
+
+    elif [ "$a" == "n" ]
+    then
+        echo -e "Project created \n\n\t$blue cd $cppDir\n\t$green gcc main.cpp -o main $white\n"
+
+        # Check if user is using mac/linux/windows
+        if [ "$machine" == "mac" ]
+        then
+            open .
+            echo "wkcr: Open current location in explorator on mac"
+        elif [ "$machine" == "Linux" ]
+        then
+            xdg-open .
+            echo "wkcr: Open current location in explorator on linux" >> $LOG
+        else 
+            echo "wkcr:$red Unknow machine"
+            echo "wkcr: else in 0 option in 2 menu option, machine windows or other linux distibution not supported yet" >> $LOG
+        fi
+
+    else
+        echo "wkcr: Menu option 3 creating classes error give something else than y/n" >> $LOG
+		echo "wkcr:$red Something wrong only avaiable options are y/n"
+		exit 0
+    fi
+
+}
+
 
 
 case $choice in 
@@ -513,7 +628,8 @@ case $choice in
     ;;
 
     3)
-    echo "Option 3"
+    echo "wkcr: Option 2 from main menu" >> $LOG
+    cpp
     ;;
 
     4)
