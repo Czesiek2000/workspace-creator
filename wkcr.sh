@@ -510,6 +510,8 @@ function cpp {
     fi
         echo "wkcr: Cpp file $cppFile " >> $LOG
 
+    check "$cppDir"
+
     if [ -d $cppDir ]
     then
         echo "wkcr: Folder $cppDir exists, from menu option 3" >> $LOG
@@ -623,10 +625,10 @@ function java {
 
     echo "wkcr: Correct java folder name if nothing passed" >> $LOG
 
+    check "$javaD"
     # Check if passed directory exists
     if [ -d $javaD ]
     then
-        check "$javaD"
         echo "wkcr: Java option, folder $javaD exists" >> $LOG
 		echo "wkcr: $red$javaD Folder with that name already exists $white \n"
 		exit 0
@@ -658,6 +660,161 @@ function java {
     echo -e "\n New project created in $javaD \n\n Execute commands to start project \n\n\t$blue cd $javaD\n\t$green javac $jfile\n\t$green java $jfile\n"
 }
 
+function extensionCheck {
+    if [[ "$1" == *"py"* ]] ;
+    then
+        echo "Downloading python project"
+        download example.py
+        cp "config/example.py" $2
+        echo "wkcr: Custom option python project downloaded" >> $LOG
+    
+    elif [ "$1" == "go" ] ;
+    then
+        echo "Downloading go project"
+        download example.go
+        echo "wkcr: Custom option go project downloaded" >> $LOG
+    
+    elif [ "$1" == "ru" ] ;
+    then
+        echo "Downloading ruby project"
+        download example.ru
+        echo "wkcr: Custom option ruby project downloaded" >> $LOG
+    
+    elif [ "$1" == "c" ] ;
+    then
+        echo "Downloading c project"
+        # download example.c
+        echo "wkcr: Custom option c project downloaded" >> $LOG
+    fi
+
+}
+
+function custom {
+    echo -e "\n\tCUSTOM OPTION FROM MENU\n" >> $LOG
+    echo "wkcr: Entered option 5 in menu" >> $LOG
+	echo -n "$green?$white Give project folder name that you want to be created: "
+	read c
+
+    if [ -z $c ]
+	then
+		echo "wkcr: Custom option c is empty set value of c to $DEFAULTPROJECTNAME" >> $LOG
+		c=$DEFAULTPROJECTNAME
+	fi
+
+    echo "wkcr: Value of folder name: $c" >> $LOG
+
+    check $c
+    # Check if folder exists
+    if [ -d $c ]
+    then
+        echo "wkcr: $red$c Folder with that name already exists"
+		echo "wkcr: Custom option folder $c exists" >> $LOG
+		exit 0
+	else
+		mkdir $c
+		echo "wkcr: Custom option folder $c created" >> $LOG
+		echo "Folder $c created" 
+	fi
+
+    echo -n "$green?$white Give project extension (without .): "
+	read extension
+
+    echo "Extension $extension"
+    
+    if [ -z $extension ]
+	then
+		echo "wkcr: Custom option empty extension" >> $LOG
+    
+        echo -n "$green?$white Create project without extension? (y/n): "
+        read answer
+
+        if [[ "$answer" == "y" ]]
+        then
+            echo "wkcr: Value of user answer to create file without extension: $answer" >> $LOG
+            echo "wkcr:$yellow Files will be created without extension"
+            extension=""
+            echo "wkcr: Extension variable set to empty" >> $LOG
+        
+        elif [[ "$answer" == "n" ]]
+        then
+            echo "wkcr: Value of user answer to create file without extension: $answer" >> $LOG
+            echo "wkcr: Files will have extension"
+
+            echo -n "$green?$white Give file extension: "
+            read extension
+
+            echo "wkcr: Set value of extension to $extension" >> $LOG
+        else 
+            echo "wkcr: Answer to create file without extension is wrong, given $answer" >> $LOG
+            echo "wkcr: $red Wrong answer available options (y/n)"
+            exit 1
+        fi
+
+
+        echo "Extension given $extension"
+    else
+        if [[ "$extension" == *"."* ]]
+        then
+            extension=$extension
+        else
+            extension=".$extension"
+        fi
+	fi
+
+    echo "Extension given $extension"
+
+    echo -n "$green?$white Give file name or names to create (without extension ex script not script.EXTENSION): "
+    read f
+
+    extensionCheck "$extension"
+    for i in $f
+    do
+        if [[ $i == *"."* ]]
+        then
+            touch "$c/$i"
+            echo "$c/$i"
+
+            if [[ "$extension" == *"py"* ]]
+            then
+                cp "config/example.py" "$c/$i"
+            
+            elif [[ "$extension" == *"ru"* ]]
+            then
+                cp "config/example.ru" "$c/$i"
+        
+            elif [[ "$extension" == *"go"* ]]
+            then
+                cp "config/example.go" "$c/$i"
+        
+            else
+                echo "Extension not support" >> $LOG
+            fi
+
+        else
+            touch "$c/$i$extension"
+            echo "$c/$i$extension"
+   
+            if [[ "$extension" == *"py"* ]]
+            then
+                cp "config/example.py" "$c/$i$extension"
+            
+            elif [[ "$extension" == *"ru"* ]]
+            then
+                cp "config/example.ru" "$c/$i$extension"
+        
+            elif [[ "$extension" == *"go"* ]]
+            then
+                cp "config/example.go" "$c/$i$extension"
+        
+            else
+                echo "Extension not support" >> $LOG
+            fi
+
+        fi
+    done
+
+
+}
 
 case $choice in 
     0)
@@ -678,21 +835,29 @@ case $choice in
     ;;
 
     3)
-    echo "wkcr: Option 2 from main menu" >> $LOG
+    echo "wkcr: Option 3 from main menu" >> $LOG
     cpp
     ;;
 
     4)
-    echo "wkcr: Option 2 from main menu" >> $LOG
+    echo "wkcr: Option 4 from main menu" >> $LOG
     java
     ;;
 
     5)
-    echo "Option 5"
+    echo "wkcr: Option 5 from main menu" >> $LOG
+    custom
     ;;
 
     6)
-    echo "Option 6"
+    source ./help.sh
+    exit 0
+    ;;
+
+    *)
+    echo "wkcr: Enter wrong value for menu option "
+    echo "wkcr: Enter default menu option" >> $LOG
+    exit 0
     ;;
 
 esac
